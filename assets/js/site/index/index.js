@@ -14,7 +14,7 @@ const btnDeletePaymentClass = '.btn-delete-payment';
 
 // Helper regex patterns
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+const urlRegex = /^(https?:\/\/)[^\s]+$/;
 
 //events
 $(document).ready(function() {
