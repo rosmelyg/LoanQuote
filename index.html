@@ -161,6 +161,10 @@
                             <div class="invalid-feedback">El pago inicial debe ser menor que el monto solicitado.</div>
                         </div>
                         <div class="col-md-4">
+                            <label for="financed-amount" class="form-label">Monto financiado</label>
+                            <input type="text" id="financed-amount" class="form-control bg-light" readonly value="0.00">
+                        </div>
+                        <div class="col-md-4">
                             <label for="interest-rate" class="form-label">Tasa de interés anual (%) <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" id="interest-rate" class="form-control">
                             <div class="invalid-feedback">La tasa de interés anual debe estar entre 0 y 100.</div>
@@ -196,11 +200,12 @@
                         <div class="col-md-3">
                             <label for="insurance-percentage" class="form-label">Porcentaje seguro mensual</label>
                             <input type="number" step="0.01" id="insurance-percentage" class="form-control" disabled>
-                            <div class="invalid-feedback">Debe ingresar el porcentaje de seguro mensual (0 - 100).</div>
+                            <div class="invalid-feedback">Debe ingresar el porcentaje de seguro mensual.</div>
                         </div>
                         <div class="col-md-3">
                             <label for="admin-fee" class="form-label">Comisión administrativa</label>
                             <input type="number" step="0.01" id="admin-fee" class="form-control">
+                            <div class="invalid-feedback">La comisión administrativa no puede ser menor que cero.</div>
                         </div>
                         <div class="col-md-3">
                             <label for="fee-type" class="form-label">Forma de aplicar comisión <span class="text-danger">*</span></label>
@@ -221,8 +226,64 @@
                         </button>
                     </div>
 
+                    <!-- calculation summary (Section 7) -->
+                    <h6 class="fw-bold text-secondary border-bottom pb-2 mt-4">7. Resumen de Cálculos</h6>
+                    <div id="live-summary-container" class="card bg-light border-0 p-3 mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-3"><span class="text-muted small">Monto solicitado:</span> <div class="fw-bold" id="live-amount-requested">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Pago inicial:</span> <div class="fw-bold" id="live-initial-payment">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Comisión administrativa:</span> <div class="fw-bold" id="live-admin-fee">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Monto financiado:</span> <div class="fw-bold" id="live-financed-amount">0.00</div></div>
+
+                            <div class="col-md-3"><span class="text-muted small">Monto base del préstamo:</span> <div class="fw-bold" id="live-base-amount">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Tasa de interés anual:</span> <div class="fw-bold" id="live-annual-rate">0.00%</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Tasa de interés mensual:</span> <div class="fw-bold" id="live-monthly-rate">0.00%</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Plazo en meses:</span> <div class="fw-bold" id="live-term">0</div></div>
+
+                            <div class="col-md-3"><span class="text-muted small">Cantidad de cuotas generadas:</span> <div class="fw-bold" id="live-quotas-count">0</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Cuota estimada inicial:</span> <div class="fw-bold text-primary" id="live-first-quota">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Total capital pagado:</span> <div class="fw-bold" id="live-total-capital">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Total intereses:</span> <div class="fw-bold" id="live-total-interest">0.00</div></div>
+
+                            <div class="col-md-3"><span class="text-muted small">Total seguro:</span> <div class="fw-bold" id="live-total-insurance">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Total pagos extra aplicados:</span> <div class="fw-bold" id="live-total-extra">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Total cuotas pagadas:</span> <div class="fw-bold" id="live-total-quotas">0.00</div></div>
+                            <div class="col-md-3"><span class="text-muted small">Total general a pagar:</span> <div class="fw-bold text-success" id="live-total-to-pay">0.00</div></div>
+
+                            <div class="col-md-4"><span class="text-muted small">Fecha estimada de finalización:</span> <div class="fw-bold" id="live-end-date">-</div></div>
+                            <div class="col-md-4"><span class="text-muted small">Relación cuota / ingreso:</span> <div class="fw-bold" id="live-debt-ratio">0.00%</div></div>
+                            <div class="col-md-4"><span class="text-muted small">Nivel de endeudamiento:</span> <div class="fw-bold" id="live-risk-level">-</div></div>
+                        </div>
+                    </div>
+
+                    <!-- amortization table (Section 8) -->
+                    <h6 class="fw-bold text-secondary border-bottom pb-2 mt-4">8. Tabla de Amortización</h6>
+                    <div class="table-responsive mb-3" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-striped table-hover table-bordered text-end align-middle mb-0" id="live-amortization-table">
+                            <thead class="table-primary text-center align-middle sticky-top">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Fecha de pago</th>
+                                    <th>Balance inicial</th>
+                                    <th>Cuota base</th>
+                                    <th>Capital</th>
+                                    <th>Interés</th>
+                                    <th>Seguro</th>
+                                    <th>Pago extraordinario</th>
+                                    <th>Cuota total</th>
+                                    <th>Balance final</th>
+                                </tr>
+                            </thead>
+                            <tbody id="live-amortization-tbody">
+                                <tr>
+                                    <td colspan="10" class="text-center text-muted py-3">Ingrese los datos requeridos del préstamo para visualizar la tabla en tiempo real.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
                     <!-- generate quote button -->
-                    <div class="text-end mt-5 border-top pt-4">
+                    <div class="text-end mt-4 border-top pt-3">
                         <button type="button" id="btn-generate-quote" class="btn btn-success btn-lg px-5">
                             Generar cotización
                         </button>
