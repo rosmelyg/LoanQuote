@@ -83,18 +83,71 @@ function handleAddExtraPayment() {
 }
 
 function handleDeleteExtraPayment(buttonElement) {
-    $(buttonElement).closest('.extra-payment-row').remove();
+    $.confirm({
+        title: 'Eliminar pago',
+        content: '¿Está seguro de que desea eliminar este pago extraordinario?',
+        type: 'red',
+        buttons: {
+            eliminar: {
+                text: 'Sí, eliminar',
+                btnClass: 'btn-danger',
+                action: function () {
+                    $(buttonElement).closest('.extra-payment-row').remove();
+                    // Toast notification for user feedback
+                    $.toast({
+                        heading: 'Eliminado',
+                        text: 'El pago extraordinario fue removido.',
+                        icon: 'info',
+                        position: 'top-right',
+                        hideAfter: 2000
+                    });
+                }
+            },
+            cancelar: function () {
+            }
+        }
+    });
 }
 
 function handleGenerateQuote() {
     let isFormValid = validateForm();
 
     if (isFormValid) {
-        // to execute mathematical calculations and render the summary or table
-        console.log("Validation Passed! Proceeding to generate quote...");
-        generateAmortizationTable();
+        $.confirm({
+            title: 'Generar Cotización',
+            content: '¿Está seguro que desea generar esta cotización con los datos ingresados?',
+            type: 'blue',
+            buttons: {
+                confirmar: {
+                    text: 'Sí, generar',
+                    btnClass: 'btn-primary',
+                    action: function () {
+                        generateAmortizationTable();
+                        // Toast 
+                        $.toast({
+                            heading: '¡Éxito!',
+                            text: 'Cotización generada correctamente.',
+                            icon: 'success',
+                            position: 'top-right',
+                            hideAfter: 3500
+                        });
+                    }
+                },
+                cancelar: {
+                    text: 'Revisar datos',
+                    action: function () {}
+                }
+            }
+        });
     } else {
-        // scroll to the top if validation fails to ensure user sees the red warnings
+        // Toast for validation error
+        $.toast({
+            heading: 'Error de Validación',
+            text: 'Por favor, complete correctamente todos los campos marcados en rojo.',
+            icon: 'error',
+            position: 'top-right',
+            hideAfter: 4500
+        });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
